@@ -1,5 +1,6 @@
-from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
+
+from models.user_model import TypeProblemEnum
 
 
 class UserPostSchema(BaseModel):
@@ -7,6 +8,15 @@ class UserPostSchema(BaseModel):
     email: str
     password: str
     problem_type: str
+
+    @field_validator("problem_type")
+    def validate_problem_type(cls, problem: str) -> str:
+        values = {item.name for item in TypeProblemEnum}
+        if problem not in values:
+            raise ValueError(
+                f"Invalid problem_type. Allowed values: {values}"
+            )
+        return problem
 
 
 class UserSchema(BaseModel):
@@ -16,7 +26,14 @@ class UserSchema(BaseModel):
     problem_type: str
 
 
-class UserPatchSchema(BaseModel):
-    full_name: Optional[str] = None
-    email: Optional[str] = None
-    problem_type: Optional[str] = None
+class UserPatchSchema(UserPostSchema):
+    full_name: str | None = Field(default=None)
+    email: str | None = Field(default=None)
+    password: str | None = Field(default=None)
+    problem_type: str | None = Field(default=None)
+
+    @field_validator("problem_type")
+    def validate_problem_type(cls, problem: str | None) -> str | None:
+        if problem in None:
+            return None
+        return super().validate_problem_type(problem)
