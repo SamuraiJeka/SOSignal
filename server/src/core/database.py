@@ -7,7 +7,7 @@ engine = create_engine(
     url=settings.db_url,
     echo=True
 )
-session = sessionmaker(engine)
+get_session = sessionmaker(engine)
 
 
 class Base(DeclarativeBase):
