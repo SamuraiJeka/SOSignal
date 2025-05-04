@@ -23,7 +23,7 @@ class UserRepository:
     def get_all(self) -> list[User]:
         query = select(User)
         result = self.__session.execute(query)
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     def patch(self, user_id: int, user_dto: UserPatchSchema) -> User | None:
         update_user = user_dto.model_dump(exclude_unset=True)
