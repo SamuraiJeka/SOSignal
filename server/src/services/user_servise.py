@@ -15,9 +15,9 @@ class UserService:
     def get_all(self) -> list[UserSchema]:
         user_list = self.__reposiotory.get_all()
         return [UserSchema.model_validate(user, from_attributes=True) for user in user_list]
-    
-    def patch(self, user_id: int, user_dto: UserPatchSchema) -> UserSchema:
-        user = self.__reposiotory.patch(user_id, user_dto)
+
+    def update(self, user_id: int, user_dto: UserPatchSchema) -> UserSchema:
+        user = self.__reposiotory.update(user_id, user_dto)
         return UserSchema.model_validate(user, from_attributes=True)
 
     def delete(self, user_id: int) -> bool:

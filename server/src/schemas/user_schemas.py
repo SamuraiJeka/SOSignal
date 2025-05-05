@@ -34,6 +34,6 @@ class UserPatchSchema(UserPostSchema):
 
     @field_validator("problem_type")
     def validate_problem_type(cls, problem: str | None) -> str | None:
-        if problem in None:
+        if problem is None:
             return None
         return super().validate_problem_type(problem)
