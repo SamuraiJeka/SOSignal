@@ -26,7 +26,7 @@ class UserSchema(BaseModel):
     problem_type: str
 
 
-class UserPatchSchema(UserPostSchema):
+class UserPatchSchema(BaseModel):
     full_name: str | None = Field(default=None)
     email: str | None = Field(default=None)
     password: str | None = Field(default=None)
@@ -36,4 +36,9 @@ class UserPatchSchema(UserPostSchema):
     def validate_problem_type(cls, problem: str | None) -> str | None:
         if problem is None:
             return None
-        return super().validate_problem_type(problem)
+        values = {item.name for item in TypeProblemEnum}
+        if problem not in values:
+            raise ValueError(
+                f"Invalid problem_type. Allowed values: {values}"
+            )
+        return problem

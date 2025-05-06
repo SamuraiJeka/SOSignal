@@ -53,7 +53,7 @@ class UserRepository:
         self.__session.commit()
         return bool(result)
 
-    def is_exists(self, email: str) -> bool:
+    def is_exists(self, email: str) -> bool | None:
         query = select(exists().where(User.email == email))
         result = self.__session.execute(query)
         return result.scalar()
