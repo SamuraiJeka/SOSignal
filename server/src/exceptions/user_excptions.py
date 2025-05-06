@@ -3,7 +3,7 @@ from fastapi import status
 
 class UserNotFound(Exception):
     def __init__(self):
-        self.msg = f"Пользователь не найден"
+        self.msg = "Пользователь не найден"
         self.status = status.HTTP_404_NOT_FOUND
 
 

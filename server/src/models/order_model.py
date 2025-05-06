@@ -31,12 +31,12 @@ class Order(Base):
         nullable=False,
         unique=True
     )
-    start_time: Mapped[Time] = mapped_column(
+    start_time: Mapped[time] = mapped_column(
         Time,
         nullable=False,
         unique=False
     )
-    finish_time: Mapped[Time] = mapped_column(
+    finish_time: Mapped[time] = mapped_column(
         Time,
         nullable=False,
         unique=False
