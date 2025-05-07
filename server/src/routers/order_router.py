@@ -29,7 +29,7 @@ def get_by_user_id(id: int) -> list[OrderSchema]:
 
 
 @router.delete("/{id}")
-def delete(id: int) -> bool:
+def delete(id: int) -> bool | None:
     try:
         with get_session() as session:
             return OrderService(session).delete(id)

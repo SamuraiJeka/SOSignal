@@ -53,7 +53,16 @@ class UserRepository:
         self.__session.commit()
         return bool(result)
 
-    def is_exists(self, email: str) -> bool | None:
-        query = select(exists().where(User.email == email))
+    def is_exists(
+        self,
+        email: str | None = None,
+        id: int | None = None
+    ) -> bool | None:
+        if id is not None:
+            query = select(exists().where(User.id == id))
+        elif email is not None:
+            query = select(exists().where(User.email == email))
+        else:
+            raise ValueError("Incorrect function overload")
         result = self.__session.execute(query)
         return result.scalar()

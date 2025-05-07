@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import select, insert, update, delete, exists
+from sqlalchemy import select, insert, delete
 
 from models import Order
 from schemas.order_schemas import OrderPostSchema
