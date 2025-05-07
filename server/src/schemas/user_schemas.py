@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, PositiveInt
 
 from models.user_model import TypeProblemEnum
 
@@ -20,7 +20,7 @@ class UserPostSchema(BaseModel):
 
 
 class UserSchema(BaseModel):
-    id: int
+    id: PositiveInt
     full_name: str
     email: str
     problem_type: str

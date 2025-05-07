@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, insert, update, delete, exists
 
 from schemas.user_schemas import UserPostSchema, UserPatchSchema
-from models.user_model import User
+from models import User
 from exceptions.user_excptions import (
     UserNotFound,
     UserAlreadyExist,

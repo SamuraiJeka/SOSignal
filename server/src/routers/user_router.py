@@ -10,7 +10,7 @@ from exceptions.user_excptions import (
 )
 
 
-router = APIRouter(prefix="/user")
+router = APIRouter(prefix="/user", tags=["user"])
 
 
 @router.post("/", status_code=200)
