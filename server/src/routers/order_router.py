@@ -11,27 +11,27 @@ router = APIRouter(prefix="/order", tags=["order"])
 
 
 @router.post("/")
-def post_order(order_dto: OrderPostSchema) -> OrderSchema:
+async def post_order(order_dto: OrderPostSchema) -> OrderSchema:
     try:
-        with get_session() as session:
-            return OrderService(session).create(order_dto)
+        async with get_session() as session:
+            return await OrderService(session).create(order_dto)
     except UserNotFound as exc:
         raise HTTPException(detail=exc.msg, status_code=exc.status)
 
 
 @router.get("/user/{id}")
-def get_by_user_id(id: int) -> list[OrderSchema]:
+async def get_by_user_id(id: int) -> list[OrderSchema]:
     try:
-        with get_session() as session:
-            return OrderService(session).get_by_user_id(id)
+        async with get_session() as session:
+            return await OrderService(session).get_by_user_id(id)
     except UserNotFound as exc:
         raise HTTPException(detail=exc.msg, status_code=exc.status)
 
 
 @router.delete("/{id}")
-def delete(id: int) -> bool | None:
+async def delete(id: int) -> bool | None:
     try:
-        with get_session() as session:
-            return OrderService(session).delete(id)
+        async with get_session() as session:
+            return await OrderService(session).delete(id)
     except OrderNotFound as exc:
         raise HTTPException(detail=exc.msg, status_code=exc.status)

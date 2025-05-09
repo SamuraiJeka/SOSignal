@@ -17,6 +17,7 @@ dependencies = [
     "sqladmin (>=0.20.1,<0.21.0)",
     "bcrypt (>=4.3.0,<5.0.0)",
     "itsdangerous (>=2.2.0,<3.0.0)",
+    "asyncpg (>=0.30.0,<0.31.0)",
 ]
 
 

@@ -1,3 +1,4 @@
+import asyncio
 import uvicorn
 from fastapi import FastAPI
 from sqladmin import Admin
@@ -35,4 +36,4 @@ app.include_router(order_router)
 
 
 if __name__ == '__main__':
-    uvicorn.run(app)
+    asyncio.run(uvicorn.run(app))
