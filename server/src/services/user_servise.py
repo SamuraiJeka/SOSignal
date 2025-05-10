@@ -1,12 +1,10 @@
-import bcrypt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from repositories.user_repository import UserRepository
 from schemas.user_schemas import (
     UserPostSchema,
     UserSchema,
-    UserPatchSchema,
-    UserLoginSchema
+    UserPatchSchema
 )
 
 

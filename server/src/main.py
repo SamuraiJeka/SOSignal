@@ -5,7 +5,7 @@ from sqladmin import Admin
 
 from core.settings import settings
 from core.database import engine
-from utils.admin.auth import AdminAuth
+from utils.admin.admin_auth import AdminAuth
 from utils.admin.views import (
     AdminView,
     UserView,
@@ -35,7 +35,3 @@ admin.add_view(GroupView)
 app.include_router(user_router)
 app.include_router(order_router)
 app.include_router(auth_router)
-
-
-if __name__ == '__main__':
-    asyncio.run(uvicorn.run(app))

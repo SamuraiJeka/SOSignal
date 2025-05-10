@@ -10,7 +10,7 @@ class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         form = await request.form()
         username = form["username"]
-        password = form["password"]
+        password = str(form["password"])
         async with get_session() as session:
             query = select(Admin).where(Admin.name == username)
             result = await session.execute(query)

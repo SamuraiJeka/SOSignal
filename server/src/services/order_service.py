@@ -8,7 +8,7 @@ from exceptions.user_excptions import UserNotFound
 
 #TODO: Интегрировать сервис группы. Написать логику распределения персонала по заявкам.
 class OrderService:
-    async def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession):
         self.__repository = OrderRepository(session)
         self.__user_repository = UserRepository(session)
     

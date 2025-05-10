@@ -1,4 +1,3 @@
-import bcrypt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, delete, exists
 
@@ -41,7 +40,7 @@ class UserRepository:
             raise UserListIsEmpty
         return user_list
     
-    async def get_by_email(self, email: str) -> User | None:
+    async def get_by_email(self, email: str) -> User:
         query = select(User).where(User.email == email)
         result = await self.__session.execute(query)
         user = result.scalar_one_or_none()
