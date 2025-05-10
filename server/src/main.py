@@ -1,5 +1,3 @@
-import asyncio
-import uvicorn
 from fastapi import FastAPI
 from sqladmin import Admin
 
