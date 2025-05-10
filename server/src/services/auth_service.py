@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.settings import settings
 from repositories.user_repository import UserRepository
 from exceptions.user_excptions import InvalidPassword
+from exceptions.auth_exceptions import TokenException
 from schemas.user_schemas import (
     UserLoginSchema,
     UserPostSchema,
@@ -29,9 +30,28 @@ class AuthService:
         tokens = await self.generate_tokens(user_dto.email)
         return TokenSchema(**tokens)
 
+    async def refresh(self, refresh_token: str) -> TokenSchema:
+        try:
+            payload = jwt.decode(
+                refresh_token,
+                settings.SECRET_KEY,
+                algorithms=[settings.ALGORITHM]
+            )
+
+            if payload["type"] != "refresh":
+                raise TokenException("Неверный тип токена")
+            if datetime.datetime.fromtimestamp(payload["exp"]) < datetime.datetime.now():
+                raise TokenException("Токен просрочен")
+            
+            email = payload["email"]
+            tokens = await self.generate_tokens(email)
+            return TokenSchema(**tokens)
+        except jwt.PyJWTError:
+            raise TokenException("Некорректный токен")
+
     async def check_password(self, user_dto: UserLoginSchema) -> bool:
         user = await self.__user_repository.get_by_email(user_dto.email)
-        return bcrypt.checkpw(user.password.encode(), user_dto.password.encode())
+        return bcrypt.checkpw(user_dto.password.encode(), user.password.encode())
     
     @staticmethod
     async def generate_password_hash( password: str) -> str:
@@ -61,5 +81,5 @@ class AuthService:
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "token_type": "bearer"
+            "token_type": "Bearer"
         }
