@@ -13,7 +13,7 @@ from exceptions.user_excptions import (
 router = APIRouter(prefix="/user", tags=["user"])
 
 
-@router.post("/", status_code=200)
+@router.post("/", status_code=201)
 async def post_user(user_dto: UserPostSchema) -> UserSchema:
     try:
         async with get_session() as session:

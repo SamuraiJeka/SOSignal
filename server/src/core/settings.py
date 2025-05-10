@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_PORT: int
     SECRET_KEY: str
+    ALGORITHM: str
 
     @property
     def db_url(self):

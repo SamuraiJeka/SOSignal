@@ -15,6 +15,7 @@ from utils.admin.views import (
 )
 from routers.user_router import router as user_router
 from routers.order_router import router as order_router
+from routers.auth_router import router as auth_router
 
 
 app = FastAPI()
@@ -33,6 +34,7 @@ admin.add_view(GroupView)
 
 app.include_router(user_router)
 app.include_router(order_router)
+app.include_router(auth_router)
 
 
 if __name__ == '__main__':

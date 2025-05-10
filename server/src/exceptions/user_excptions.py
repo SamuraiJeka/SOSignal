@@ -17,3 +17,9 @@ class UserListIsEmpty(Exception):
     def __init__(self):
         self.msg = "Список пользователей пустой"
         self.status = status.HTTP_400_BAD_REQUEST
+
+
+class InvalidPassword(Exception):
+    def __init__(self):
+        self.msg = "Неверный пароль"
+        self.status = status.HTTP_400_BAD_REQUEST

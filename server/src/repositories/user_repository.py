@@ -1,7 +1,11 @@
+import bcrypt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, delete, exists
 
-from schemas.user_schemas import UserPostSchema, UserPatchSchema
+from schemas.user_schemas import (
+    UserPostSchema,
+    UserPatchSchema,
+)
 from models import User
 from exceptions.user_excptions import (
     UserNotFound,
@@ -29,7 +33,6 @@ class UserRepository:
         await self.__session.refresh(user)
         return user
 
-
     async def get_all(self) -> list[User]:
         query = select(User)
         result = await self.__session.execute(query)
@@ -37,6 +40,14 @@ class UserRepository:
         if not user_list:
             raise UserListIsEmpty
         return user_list
+    
+    async def get_by_email(self, email: str) -> User | None:
+        query = select(User).where(User.email == email)
+        result = await self.__session.execute(query)
+        user = result.scalar_one_or_none()
+        if user is None:
+            raise UserNotFound
+        return user
 
     async def update(self, user_id: int, user_dto: UserPatchSchema) -> User | None:
         update_user = user_dto.model_dump(exclude_unset=True)
