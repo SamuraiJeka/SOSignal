@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqladmin import Admin
 
 from core.settings import settings
@@ -24,6 +25,15 @@ admin = Admin(
     engine=engine,
     authentication_backend=authentication_backend
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
 admin.add_view(AdminView)
 admin.add_view(UserView)
 admin.add_view(StuffView)

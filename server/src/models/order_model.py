@@ -29,7 +29,7 @@ class Order(Base):
     order_date: Mapped[date] = mapped_column(
         Date,
         nullable=False,
-        unique=True
+        unique=False
     )
     start_time: Mapped[time] = mapped_column(
         Time,

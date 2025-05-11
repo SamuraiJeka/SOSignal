@@ -5,7 +5,7 @@ from core.settings import settings
 
 
 engine = create_async_engine(url=settings.db_url, echo=True)
-get_session = async_sessionmaker(engine)
+get_session = async_sessionmaker(engine, expire_on_commit=False,)
 
 
 class Base(DeclarativeBase):

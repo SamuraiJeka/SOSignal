@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from core.database import get_session
 from schemas.order_schemas import OrderPostSchema, OrderSchema
 from schemas.user_schemas import UserSchema
+from schemas.stuff_schemas import StuffSchema
 from services.order_service import OrderService
 from exceptions.order_exceptions import OrderNotFound
 from exceptions.user_excptions import UserNotFound
@@ -20,7 +21,7 @@ async def post_order(
 ) -> OrderSchema:
     try:
         async with get_session() as session:
-            return await OrderService(session).create(order_dto)
+            return await OrderService(session).create(current_user.id, order_dto)
     except UserNotFound as exc:
         raise HTTPException(detail=exc.msg, status_code=exc.status)
     except Understaffed as exc:
@@ -44,4 +45,13 @@ async def delete(id: int) -> bool | None:
         async with get_session() as session:
             return await OrderService(session).delete(id)
     except OrderNotFound as exc:
+        raise HTTPException(detail=exc.msg, status_code=exc.status)
+
+
+@router.get("/stuff/{id}")
+async def get_stuff(id: int) -> list[StuffSchema]:
+    try:
+        async with get_session() as session:
+            return OrderService(session).get_stuff_by_id(id)
+    except StuffNotFound as exc:
         raise HTTPException(detail=exc.msg, status_code=exc.status)

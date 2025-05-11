@@ -10,13 +10,13 @@ class OrderRepository:
     def __init__(self, session: AsyncSession):
         self.__session = session
     
-    async def create(self, user_dto: OrderPostSchema) -> Order | None:
+    async def create(self, user_id: int, order_dto: OrderPostSchema) -> Order | None:
         query = insert(Order).values(
-            user_id=user_dto.user_id,
-            baggage=user_dto.baggage,
-            order_date=user_dto.order_date,
-            start_time=user_dto.start_time,
-            finish_time=user_dto.finish_time
+            user_id=user_id,
+            baggage=order_dto.baggage,
+            order_date=order_dto.order_date,
+            start_time=order_dto.start_time,
+            finish_time=order_dto.finish_time
         ).returning(Order)
         result = await self.__session.execute(query)
         await self.__session.commit()

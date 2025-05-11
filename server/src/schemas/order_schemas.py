@@ -1,25 +1,56 @@
+from typing import Annotated
 from datetime import date, time
 from pydantic import BaseModel, Field, field_validator, PositiveInt, ValidationInfo
+from pydantic.functional_validators import AfterValidator
+from pydantic_core import PydanticCustomError
 
 
-    class OrderPostSchema(BaseModel):
-        user_id: PositiveInt
-        baggage: bool = Field(default=False)
-        order_date: date
-        start_time: time
-        finish_time: time
+def parse_any_time_format(v: str | time) -> time:
+    if isinstance(v, time):
+        return v
+    
+    try:
+        cleaned = ''.join(c for c in v if c.isdigit() or c == ':')
+        parts = cleaned.split(':')
+        if len(parts) == 1:
+            time_str = parts[0].zfill(4)
+            hours = int(time_str[:2])
+            minutes = int(time_str[2:4])
+        else:
+            hours = int(parts[0])
+            minutes = int(parts[1]) if len(parts) > 1 else 0
+        
+        return time(hour=hours, minute=minutes)
+    
+    except (ValueError, IndexError):
+        raise PydanticCustomError(
+            "invalid_time_format",
+            "Time must be in H:MM, HH:MM, HHMM or similar format",
+            {"input": v}
+        )
+
+
+FlexibleTime = Annotated[time, AfterValidator(parse_any_time_format)]
+
+
+class OrderPostSchema(BaseModel):
+    baggage: bool = False
+    order_date: date
+    start_time: FlexibleTime
+    finish_time: FlexibleTime
 
     @field_validator('finish_time')
-    def validate_finish_time(cls, finish_time: time, info: ValidationInfo) -> time:
-        if 'start_time' in info.data and finish_time <= info.data['start_time']:
-            raise ValueError('finish_time must be greater than start_time')
-        return finish_time
+    def validate_finish_time(cls, v: time, info: ValidationInfo) -> time:
+        if 'start_time' in info.data and v <= info.data['start_time']:
+            raise ValueError('Finish time must be after start time')
+        return v
+
+    class Config:
+        json_encoders = {
+            time: lambda t: t.strftime("%H:%M"),
+        }
 
 
-class OrderSchema(BaseModel):
-    id: PositiveInt
-    user_id: PositiveInt
-    baggage: bool
-    order_date: date
-    start_time: time
-    finish_time: time
+class OrderSchema(OrderPostSchema):
+    id: int
+    user_id: int
