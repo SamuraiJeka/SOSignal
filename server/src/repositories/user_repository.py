@@ -1,8 +1,11 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, delete, exists
 
-from schemas.user_schemas import UserPostSchema, UserPatchSchema
-from models.user_model import User
+from schemas.user_schemas import (
+    UserPostSchema,
+    UserPatchSchema,
+)
+from models import User
 from exceptions.user_excptions import (
     UserNotFound,
     UserAlreadyExist,
@@ -11,11 +14,11 @@ from exceptions.user_excptions import (
 
 
 class UserRepository:
-    def __init__(self, session: Session):
+    def __init__(self, session: AsyncSession):
         self.__session = session
     
-    def create(self, user_dto: UserPostSchema) -> User | None:
-        if self.is_exists(email=user_dto.email):
+    async def create(self, user_dto: UserPostSchema) -> User | None:
+        if await self.is_exists(email=user_dto.email):
             raise UserAlreadyExist(user_dto.email)
         query = insert(User).values(
             full_name=user_dto.full_name,
@@ -23,37 +26,57 @@ class UserRepository:
             password=user_dto.password,
             problem_type=user_dto.problem_type
         ).returning(User)
-        result = self.__session.execute(query)
-        self.__session.commit()
-        return result.scalar_one_or_none()
+        result = await self.__session.execute(query)
+        await self.__session.commit()
+        user = result.scalar_one_or_none()
+        await self.__session.refresh(user)
+        return user
 
-    def get_all(self) -> list[User]:
+    async def get_all(self) -> list[User]:
         query = select(User)
-        result = self.__session.execute(query)
+        result = await self.__session.execute(query)
         user_list = list(result.scalars().all())
         if not user_list:
             raise UserListIsEmpty
         return user_list
-
-    def update(self, user_id: int, user_dto: UserPatchSchema) -> User | None:
-        update_user = user_dto.model_dump(exclude_unset=True)
-        query = update(User).where(User.id == user_id).values(**update_user).returning(User)
-        result = self.__session.execute(query)
-        self.__session.commit()
+    
+    async def get_by_email(self, email: str) -> User:
+        query = select(User).where(User.email == email)
+        result = await self.__session.execute(query)
         user = result.scalar_one_or_none()
         if user is None:
             raise UserNotFound
         return user
 
-    def delete(self, user_id: int) -> bool:
+    async def update(self, user_id: int, user_dto: UserPatchSchema) -> User | None:
+        update_user = user_dto.model_dump(exclude_unset=True)
+        query = update(User).where(User.id == user_id).values(**update_user).returning(User)
+        result = await self.__session.execute(query)
+        await self.__session.commit()
+        user = result.scalar_one_or_none()
+        if user is None:
+            raise UserNotFound
+        await self.__session.refresh(user)
+        return user
+
+    async def delete(self, user_id: int) -> bool:
         query = delete(User).where(User.id == user_id).returning(User)
-        result = self.__session.execute(query)
+        result = await self.__session.execute(query)
         if result.scalar() is None:
             raise UserNotFound
-        self.__session.commit()
+        await self.__session.commit()
         return bool(result)
 
-    def is_exists(self, email: str) -> bool:
-        query = select(exists().where(User.email == email))
-        result = self.__session.execute(query)
+    async def is_exists(
+        self,
+        email: str | None = None,
+        id: int | None = None
+    ) -> bool | None:
+        if id is not None:
+            query = select(exists().where(User.id == id))
+        elif email is not None:
+            query = select(exists().where(User.email == email))
+        else:
+            raise ValueError("Incorrect function overload")
+        result = await self.__session.execute(query)
         return result.scalar()

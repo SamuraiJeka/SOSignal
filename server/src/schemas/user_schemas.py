@@ -1,16 +1,11 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, PositiveInt, EmailStr
 
 from models.user_model import TypeProblemEnum
 
 
-class UserPostSchema(BaseModel):
-    full_name: str
-    email: str
-    password: str
-    problem_type: str
-
-    @field_validator("problem_type")
-    def validate_problem_type(cls, problem: str) -> str:
+class BaseUserSchema(BaseModel):
+    @field_validator("problem_type", check_fields=False)
+    def validate_problem_type(cls, problem: str) -> str | None:
         values = {item.name for item in TypeProblemEnum}
         if problem not in values:
             raise ValueError(
@@ -19,16 +14,23 @@ class UserPostSchema(BaseModel):
         return problem
 
 
-class UserSchema(BaseModel):
-    id: int
+class UserPostSchema(BaseUserSchema):
     full_name: str
-    email: str
+    email: EmailStr
+    password: str
     problem_type: str
 
 
-class UserPatchSchema(UserPostSchema):
+class UserSchema(BaseModel):
+    id: PositiveInt
+    full_name: str
+    email: EmailStr
+    problem_type: str
+
+
+class UserPatchSchema(BaseUserSchema):
     full_name: str | None = Field(default=None)
-    email: str | None = Field(default=None)
+    email: EmailStr | None = Field(default=None)
     password: str | None = Field(default=None)
     problem_type: str | None = Field(default=None)
 
@@ -37,3 +39,18 @@ class UserPatchSchema(UserPostSchema):
         if problem is None:
             return None
         return super().validate_problem_type(problem)
+
+
+class UserLoginSchema(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TokenSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
+
+
+class RefreshTokenSchema(BaseModel):
+    refresh_token: str

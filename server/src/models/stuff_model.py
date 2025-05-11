@@ -1,7 +1,10 @@
+from typing import TYPE_CHECKING
 from sqlalchemy import String, Integer
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
+if TYPE_CHECKING:
+    from models.group_model import Group
 
 
 class Stuff(Base):
@@ -27,3 +30,5 @@ class Stuff(Base):
         nullable=False,
         unique=False
     )
+
+    groups: Mapped[list["Group"]] = relationship("Group", back_populates="stuff")

@@ -3,7 +3,7 @@ from fastapi import status
 
 class UserNotFound(Exception):
     def __init__(self):
-        self.msg = f"Пользователь не найден"
+        self.msg = "Пользователь не найден"
         self.status = status.HTTP_404_NOT_FOUND
 
 
@@ -16,4 +16,10 @@ class UserAlreadyExist(Exception):
 class UserListIsEmpty(Exception):
     def __init__(self):
         self.msg = "Список пользователей пустой"
+        self.status = status.HTTP_400_BAD_REQUEST
+
+
+class InvalidPassword(Exception):
+    def __init__(self):
+        self.msg = "Неверный пароль"
         self.status = status.HTTP_400_BAD_REQUEST
