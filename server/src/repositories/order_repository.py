@@ -20,8 +20,10 @@ class OrderRepository:
         ).returning(Order)
         result = await self.__session.execute(query)
         await self.__session.commit()
-        return result.scalar_one_or_none()
-    
+        order = result.scalar_one_or_none()
+        self.__session.refresh(order)
+        return order
+
     async def get_by_user_id(self, user_id: int) -> list[Order]:
         query = select(Order).where(Order.user_id == user_id)
         result = await self.__session.execute(query)

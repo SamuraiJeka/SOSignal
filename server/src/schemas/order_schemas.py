@@ -2,12 +2,12 @@ from datetime import date, time
 from pydantic import BaseModel, Field, field_validator, PositiveInt, ValidationInfo
 
 
-class OrderPostSchema(BaseModel):
-    user_id: PositiveInt
-    baggage: bool = Field(default=False)
-    order_date: date
-    start_time: time
-    finish_time: time
+    class OrderPostSchema(BaseModel):
+        user_id: PositiveInt
+        baggage: bool = Field(default=False)
+        order_date: date
+        start_time: time
+        finish_time: time
 
     @field_validator('finish_time')
     def validate_finish_time(cls, finish_time: time, info: ValidationInfo) -> time:

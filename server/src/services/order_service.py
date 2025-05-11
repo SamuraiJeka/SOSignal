@@ -2,30 +2,54 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from repositories.order_repository import OrderRepository
 from repositories.user_repository import UserRepository
+from repositories.group_repository import GroupReposiotory
+from repositories.stuff_repository import StuffReposiotory
+
 from schemas.order_schemas import OrderPostSchema, OrderSchema
+
 from exceptions.user_excptions import UserNotFound
+from exceptions.stuff_exceptions import Understaffed
 
 
-#TODO: Интегрировать сервис группы. Написать логику распределения персонала по заявкам.
 class OrderService:
     def __init__(self, session: AsyncSession):
-        self.__repository = OrderRepository(session)
+        self.__order_repository = OrderRepository(session)
         self.__user_repository = UserRepository(session)
+        self.__stuff_repository = StuffReposiotory(session)
+        self.__group_repository = GroupReposiotory(session)
     
     async def create(self, order_dto: OrderPostSchema) -> OrderSchema:
         if not await self.__user_repository.is_exists(id=order_dto.user_id):
             raise UserNotFound
-        order = await self.__repository.create(order_dto)
+        stuff_list = self.__stuff_repository.get_stuff(
+            order_dto.finish_time,
+            order_dto.order_date
+        )
+        stuff_count = self.get_stuff_count(
+            order_dto.user_id,
+            order_dto.baggage
+        )
+        if len(stuff_list) < stuff_count:
+            raise Understaffed
+        order = await self.__order_repository.create(order_dto)
+        await self.__group_repository.create(stuff_list, order.id)
         return OrderSchema.model_validate(order, from_attributes=True)
 
     async def get_by_user_id(self, user_id: int) -> list[OrderSchema]:
         if not await self.__user_repository.is_exists(id=user_id):
             raise UserNotFound
-        order_list = await self.__repository.get_by_user_id(user_id)
+        order_list = await self.__order_repository.get_by_user_id(user_id)
         return [
-            OrderSchema.model_validate(order, from_attributes=True) for order in order_list
+            OrderSchema.model_validate(order, from_attributes=True)
+            for order in order_list
         ]
 
     async def delete(self, order_id: int) -> bool | None:
-        result = await self.__repository.delete(order_id)
+        result = await self.__order_repository.delete(order_id)
         return result
+
+    async def get_stuff_count(self, user_id: int, baggage: bool) -> int:
+        problem_type = await self.__user_repository.get_problem_by_id(user_id)
+        baggage_idx = 2 if baggage else 1
+        problem_idx = 1 if problem_type == "BLINDNESS" else 1.5
+        return round(problem_idx * baggage_idx)
