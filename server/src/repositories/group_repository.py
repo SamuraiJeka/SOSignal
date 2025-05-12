@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, delete
+from sqlalchemy import insert
 
-from models import Group, Stuff
+from models import Group
 
 
 class GroupReposiotory:
@@ -13,7 +13,3 @@ class GroupReposiotory:
         query = insert(Group).values(values)
         await self.__session.execute(query)
         await self.__session.commit()
-
-    async def delete(self) -> ...:
-        ...
-    

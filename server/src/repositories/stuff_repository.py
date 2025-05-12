@@ -1,7 +1,6 @@
 from datetime import datetime, time, date, timedelta
-from datetime import time, date
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, and_, func
+from sqlalchemy import select, or_, func
 
 from models import Stuff, Group, Order
 from exceptions.stuff_exceptions import StuffNotFound
@@ -49,6 +48,18 @@ class StuffReposiotory:
                 )
             )
             .distinct()
+        )
+        result = await self.__session.execute(query)
+        stuff_list = list(result.scalars().all())
+        if not stuff_list:
+            raise StuffNotFound
+        return stuff_list
+
+    async def get_stuff_by_order_id(self, order_id: int) -> list[Stuff]:
+        query = (
+            select(Stuff)
+            .join(Group, Group.stuff_id == Stuff.id)
+            .where(Group.order_id == order_id)
         )
         result = await self.__session.execute(query)
         stuff_list = list(result.scalars().all())

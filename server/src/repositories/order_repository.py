@@ -3,14 +3,14 @@ from sqlalchemy import select, insert, delete
 
 from models import Order
 from schemas.order_schemas import OrderPostSchema
-from exceptions.order_exceptions import OrderNotFound
+from exceptions.order_exceptions import OrderNotFound, OrderCreationError
 
 
 class OrderRepository:
     def __init__(self, session: AsyncSession):
         self.__session = session
     
-    async def create(self, user_id: int, order_dto: OrderPostSchema) -> Order | None:
+    async def create(self, user_id: int, order_dto: OrderPostSchema) -> Order:
         query = insert(Order).values(
             user_id=user_id,
             baggage=order_dto.baggage,
@@ -21,7 +21,9 @@ class OrderRepository:
         result = await self.__session.execute(query)
         await self.__session.commit()
         order = result.scalar_one_or_none()
-        self.__session.refresh(order)
+        if order is None:
+            raise OrderCreationError
+        await self.__session.refresh(order)
         return order
 
     async def get_by_user_id(self, user_id: int) -> list[Order]:
