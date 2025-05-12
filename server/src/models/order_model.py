@@ -42,5 +42,9 @@ class Order(Base):
         unique=False
     )
 
-    group: Mapped["Group"] = relationship("Group", back_populates="order")
+    group: Mapped[list["Group"]] = relationship(
+        "Group",
+        back_populates="order",
+        cascade="all, delete-orphan"
+    )
     user: Mapped["User"] = relationship("User", back_populates="orders")

@@ -30,17 +30,22 @@ async def post_order(
         raise HTTPException(detail=exc.msg, status_code=exc.status)
 
 
-@router.get("/user/{id}")
-async def get_by_user_id(id: int) -> list[OrderSchema]:
+@router.get("/user")
+async def get_by_user_id(
+    current_user: UserSchema = Depends(get_current_user)
+) -> list[OrderSchema]:
     try:
         async with get_session() as session:
-            return await OrderService(session).get_by_user_id(id)
+            return await OrderService(session).get_by_user_id(current_user.id)
     except UserNotFound as exc:
         raise HTTPException(detail=exc.msg, status_code=exc.status)
 
 
 @router.delete("/{id}")
-async def delete(id: int) -> bool | None:
+async def delete(
+    id: int,
+    current_user: UserSchema = Depends(get_current_user)
+) -> bool | None:
     try:
         async with get_session() as session:
             return await OrderService(session).delete(id)
@@ -49,7 +54,10 @@ async def delete(id: int) -> bool | None:
 
 
 @router.get("/stuff/{id}")
-async def get_stuff(id: int) -> list[StuffSchema]:
+async def get_stuff(
+    id: int,
+    current_user: UserSchema = Depends(get_current_user)
+) -> list[StuffSchema]:
     try:
         async with get_session() as session:
             return OrderService(session).get_stuff_by_id(id)

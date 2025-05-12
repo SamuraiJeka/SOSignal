@@ -30,7 +30,7 @@ class OrderRepository:
         return list(result.scalars().all())
     
     async def delete(self, order_id: int) -> bool | None:
-        query = delete(Order).where(Order.id == order_id)
+        query = delete(Order).where(Order.id == order_id).returning(Order)
         result = await self.__session.execute(query)
         if result.scalar() is None:
             raise OrderNotFound
