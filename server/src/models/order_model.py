@@ -29,7 +29,7 @@ class Order(Base):
     order_date: Mapped[date] = mapped_column(
         Date,
         nullable=False,
-        unique=True
+        unique=False
     )
     start_time: Mapped[time] = mapped_column(
         Time,
@@ -42,5 +42,9 @@ class Order(Base):
         unique=False
     )
 
-    group: Mapped["Group"] = relationship("Group", back_populates="order")
+    group: Mapped[list["Group"]] = relationship(
+        "Group",
+        back_populates="order",
+        cascade="all, delete-orphan"
+    )
     user: Mapped["User"] = relationship("User", back_populates="orders")

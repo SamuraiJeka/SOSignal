@@ -47,6 +47,14 @@ class UserRepository:
         if user is None:
             raise UserNotFound
         return user
+    
+    async def get_problem_by_id(self, user_id: int) -> str:
+        query = select(User).where(User.id == user_id)
+        result = await self.__session.execute(query)
+        user = result.scalar_one_or_none()
+        if user is None:
+            raise UserNotFound
+        return user.problem_type.name
 
     async def update(self, user_id: int, user_dto: UserPatchSchema) -> User | None:
         update_user = user_dto.model_dump(exclude_unset=True)

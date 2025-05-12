@@ -37,26 +37,24 @@ async def get_all_users(
         raise HTTPException(status_code=exc.status, detail=exc.msg)
 
 
-@router.patch("/{id}", status_code=200)
+@router.patch("/", status_code=200)
 async def patch_user(
-    id: int,
     user_dto: UserPatchSchema,
     current_user: UserSchema = Depends(get_current_user)
 ) -> UserSchema:
     try:
         async with get_session() as session:
-            return await UserService(session).update(id, user_dto)
+            return await UserService(session).update(current_user.id, user_dto)
     except UserNotFound as exc:
         raise HTTPException(status_code=exc.status, detail=exc.msg)
 
 
-@router.delete("/{id}", status_code=200)
+@router.delete("/", status_code=200)
 async def delete_user(
-    id: int,
     current_user: UserSchema = Depends(get_current_user)
 ) -> bool:
     try:
         async with get_session() as session:
-            return await UserService(session).delete(id)
+            return await UserService(session).delete(current_user.id)
     except UserNotFound as exc:
         raise HTTPException(status_code=exc.status, detail=exc.msg)
