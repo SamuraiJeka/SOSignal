@@ -1,18 +1,22 @@
 import jwt
 from datetime import datetime
-from fastapi import Depends
+from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from core.settings import settings
 from core.database import get_session
 from services.user_servise import UserService
-from exceptions.auth_exceptions import TokenException
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     try:
         payload = jwt.decode(
             token,
@@ -21,13 +25,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         )
 
         if payload["type"] != "access":
-            raise TokenException("Неверный тип токена")
+            raise credentials_exception
         if datetime.fromtimestamp(payload["exp"]) < datetime.now():
-            raise TokenException("Токен просрочен")
+            raise credentials_exception
         
         email = payload["email"]
         async with get_session() as session:
             return await UserService(session).get_by_email(email)
 
     except jwt.PyJWKError:
-        raise TokenException("Не удалось подтвердить учетные данные")
+        raise credentials_exception
