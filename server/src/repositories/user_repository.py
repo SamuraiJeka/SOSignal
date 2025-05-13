@@ -1,3 +1,4 @@
+from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, delete, exists
 
@@ -5,7 +6,7 @@ from schemas.user_schemas import (
     UserPostSchema,
     UserPatchSchema,
 )
-from models import User
+from models import User, Group, Order
 from exceptions.user_excptions import (
     UserNotFound,
     UserAlreadyExist,
@@ -86,5 +87,14 @@ class UserRepository:
             query = select(exists().where(User.email == email))
         else:
             raise ValueError("Incorrect function overload")
+        result = await self.__session.execute(query)
+        return result.scalar()
+    
+    async def repetition_check(self, user_id: int, order_date: date) -> bool:
+        query = (
+            select(User)
+            .join(Order, Order.user_id == User.id)
+            .where(Order.start_time == order_date)
+        )
         result = await self.__session.execute(query)
         return result.scalar()

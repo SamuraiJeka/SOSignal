@@ -10,6 +10,7 @@ from schemas.stuff_schemas import StuffSchema
 
 from exceptions.user_excptions import UserNotFound
 from exceptions.stuff_exceptions import Understaffed
+from exceptions.order_exceptions import TimeConflict
 
 
 class OrderService:
@@ -22,6 +23,8 @@ class OrderService:
     async def create(self, user_id: int, order_dto: OrderPostSchema) -> OrderSchema:
         if not await self.__user_repository.is_exists(id=user_id):
             raise UserNotFound
+        if await self.__user_repository.repetition_check(user_id, order_dto.start_time) is not None:
+            raise TimeConflict
         stuff_list = await self.__stuff_repository.get_stuff(
             order_dto.start_time,
             order_dto.order_date
@@ -30,6 +33,8 @@ class OrderService:
             user_id,
             order_dto.baggage
         )
+        print(f"---------------{stuff_list}")
+        print(f"======={stuff_count}")
         if len(stuff_list) < stuff_count:
             raise Understaffed
         order = await self.__order_repository.create(user_id, order_dto)
