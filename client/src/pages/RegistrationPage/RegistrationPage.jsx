@@ -175,7 +175,7 @@ const RegistrationPage = () => {
         </button>
 
         <div className="login-link">
-          Уже есть аккаунт? <a href="/login">Войти</a>
+          Уже есть аккаунт? <a href="/">Войти</a>
         </div>
       </form>
     </div>
