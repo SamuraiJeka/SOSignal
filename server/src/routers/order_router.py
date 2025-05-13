@@ -5,7 +5,7 @@ from schemas.order_schemas import OrderPostSchema, OrderSchema
 from schemas.user_schemas import UserSchema
 from schemas.stuff_schemas import StuffSchema
 from services.order_service import OrderService
-from exceptions.order_exceptions import OrderNotFound, OrderCreationError
+from exceptions.order_exceptions import OrderNotFound, OrderCreationError, TimeConflict
 from exceptions.user_excptions import UserNotFound
 from exceptions.stuff_exceptions import Understaffed, StuffNotFound
 from utils.auth import get_current_user
@@ -29,6 +29,8 @@ async def post_order(
     except StuffNotFound as exc:
         raise HTTPException(detail=exc.msg, status_code=exc.status)
     except OrderCreationError as exc:
+        raise HTTPException(detail=exc.msg, status_code=exc.status)
+    except TimeConflict as exc:
         raise HTTPException(detail=exc.msg, status_code=exc.status)
 
 

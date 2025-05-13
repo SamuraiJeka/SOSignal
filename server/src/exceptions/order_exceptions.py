@@ -11,3 +11,9 @@ class OrderCreationError(Exception):
     def __init__(self):
         self.msg = "Не удалось создать заказ"
         self.status = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+class TimeConflict(Exception):
+    def __init__(self):
+        self.msg = "Одиноковое начальное время заявки"
+        self.status = status.HTTP_409_CONFLICT
