@@ -42,7 +42,9 @@ class OrderPostSchema(BaseModel):
     @field_validator('finish_time')
     def validate_finish_time(cls, v: time, info: ValidationInfo) -> time:
         if 'start_time' in info.data and v <= info.data['start_time']:
-            raise ValueError('Finish time must be after start time')
+            raise ValueError("Время окончания заявки должно быть больше времени начала")
+        if info.data['start_time'] == v:
+            raise ValueError("Время начала заявки совподает с временем окончания")
         return v
 
     class Config:

@@ -1,11 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, update, delete, exists
+from sqlalchemy import select, insert, update, delete, exists, and_
 
+from schemas.order_schemas import OrderPostSchema
 from schemas.user_schemas import (
     UserPostSchema,
     UserPatchSchema,
 )
-from models import User
+from models import User, Order
 from exceptions.user_excptions import (
     UserNotFound,
     UserAlreadyExist,
@@ -88,3 +89,19 @@ class UserRepository:
             raise ValueError("Incorrect function overload")
         result = await self.__session.execute(query)
         return result.scalar()
+
+    async def repetition_check(self, user_id: int, order_dto: OrderPostSchema) -> bool:
+        query = (
+            select(Order)
+            .where(
+                and_(
+                    Order.start_time == order_dto.start_time,
+                    Order.order_date == order_dto.order_date,
+                    Order.user_id == user_id
+                )
+            )
+        )
+        result = await self.__session.execute(query)
+        if result.scalar() is None:
+            return False
+        return True
