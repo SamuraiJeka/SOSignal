@@ -13,29 +13,35 @@ const RegistrationPage = () => {
     disabilityType: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const validateForm = () => {
-    const newErrors = {};
+    const errorMessages = [];
+    
     if (!formData.name.trim()) {
-      newErrors.name = 'Имя обязательно';
+      errorMessages.push('Имя обязательно');
     }
     if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = 'Некорректный email';
+      errorMessages.push('Некорректный email');
     }
     if (formData.password.length < 6) {
-      newErrors.password = 'Пароль должен быть не менее 6 символов';
+      errorMessages.push('Пароль должен быть не менее 6 символов');
     }
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Пароли не совпадают';
+      errorMessages.push('Пароли не совпадают');
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    
+    setErrors(errorMessages);
+    return errorMessages.length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      setIsModalOpen(true);
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -58,10 +64,10 @@ const RegistrationPage = () => {
         throw new Error(data.message || 'Ошибка регистрации');
       }
 
-      
       window.location.href = '/';
     } catch (error) {
-      setErrors({...errors, server: error.message});
+      setErrors([error.message]);
+      setIsModalOpen(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -74,12 +80,15 @@ const RegistrationPage = () => {
     });
   };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setErrors([]);
+  };
+
   return (
     <div className="registration-container">
       <form className="registration-form" onSubmit={handleSubmit} noValidate>
         <h1 className="form-title">Регистрация</h1>
-        
-        {errors.server && <div className="server-error">{errors.server}</div>}
 
         <div className="form-group">
           <label htmlFor="name">ФИО</label>
@@ -90,9 +99,7 @@ const RegistrationPage = () => {
             value={formData.name}
             onChange={handleChange}
             disabled={isSubmitting}
-            className={errors.name ? 'error' : ''}
           />
-          {errors.name && <span className="error-message">{errors.name}</span>}
         </div>
 
         <div className="form-group">
@@ -104,9 +111,7 @@ const RegistrationPage = () => {
             value={formData.email}
             onChange={handleChange}
             disabled={isSubmitting}
-            className={errors.email ? 'error' : ''}
           />
-          {errors.email && <span className="error-message">{errors.email}</span>}
         </div>
 
         <div className="form-group">
@@ -118,9 +123,7 @@ const RegistrationPage = () => {
             value={formData.password}
             onChange={handleChange}
             disabled={isSubmitting}
-            className={errors.password ? 'error' : ''}
           />
-          {errors.password && <span className="error-message">{errors.password}</span>}
         </div>
 
         <div className="form-group">
@@ -132,10 +135,7 @@ const RegistrationPage = () => {
             value={formData.confirmPassword}
             onChange={handleChange}
             disabled={isSubmitting}
-            className={errors.confirmPassword ? 'error' : ''}
           />
-          {errors.confirmPassword && 
-            <span className="error-message">{errors.confirmPassword}</span>}
         </div>
 
         <div className="form-group">
@@ -178,6 +178,25 @@ const RegistrationPage = () => {
           Уже есть аккаунт? <a href="/">Войти</a>
         </div>
       </form>
+
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="error-modal">
+            <div className="modal-header">
+              <h3>Ошибка</h3>
+              <button className="close-btn" onClick={closeModal}>&times;</button>
+            </div>
+            <div className="modal-content">
+              {errors.map((error, index) => (
+                <p key={index} className="error-message">{error}</p>
+              ))}
+            </div>
+            <button className="modal-close-btn" onClick={closeModal}>
+              Закрыть
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

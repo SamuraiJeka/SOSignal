@@ -212,3 +212,134 @@ $breakpoint-mobile: 768px;
       background-color: darken($success-color, 10%);
     }
   }
+
+.order-header {
+    
+    .order-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+  }
+  
+  .delete-btn {
+    background-color: $error-color;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  
+    &:hover {
+      background-color: darken($error-color, 10%);
+    }
+  
+    &::before {
+      content: "×";
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  
+    @media (max-width: $breakpoint-mobile) {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+  }.order-details {
+    position: relative;
+  }
+  
+  .expand-btn {
+    background: none;
+    border: none;
+    color: $secondary-color;
+    padding: 0.8rem 1rem;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    justify-content: center;
+    border-radius: 4px;
+  
+    &:hover {
+      background-color: rgba($secondary-color, 0.1);
+    }
+  
+    &::after {
+      content: '▼';
+      font-size: 0.9em;
+      transition: transform 0.3s ease;
+    }
+  
+    &.expanded::after {
+      transform: rotate(180deg);
+    }
+  }
+  
+  .staff-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .staff-list {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .staff-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  
+    h4 {
+      margin: 0 0 0.5rem 0;
+      color: $primary-color;
+      font-size: 1rem;
+    }
+  
+    p {
+      margin: 0.3rem 0;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+  
+  .loading-staff,
+  .no-staff {
+    text-align: center;
+    padding: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .error-staff {
+    color: $error-color;
+    padding: 1rem;
+    background: rgba($error-color, 0.05);
+    border-radius: 4px;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+  }

@@ -10,6 +10,7 @@ interface Order {
   finish_time: string;
   id: number;
   user_id: number;
+  staff?: Staff[];
 }
 
 interface NewOrder {
@@ -19,7 +20,14 @@ interface NewOrder {
   finish_time: string;
 }
 
-const API_BASE_URL = 'http://localhost:5000'; 
+interface Staff {
+  id: number;
+  name: string;
+  position: string;
+  email: string;
+}
+
+const API_BASE_URL = 'http://localhost:5000';
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -33,6 +41,9 @@ const MainPage = () => {
     start_time: '12:00',
     finish_time: '13:00'
   });
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [staffError, setStaffError] = useState('');
 
   useEffect(() => {
     const checkAuth = () => {
@@ -54,10 +65,8 @@ const MainPage = () => {
           }
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch orders');
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch orders');
+        
         const data = await response.json();
         setOrders(data);
       } catch (err) {
@@ -90,9 +99,8 @@ const MainPage = () => {
   };
 
   const formatTimeForApi = (time: string) => {
-    // Преобразуем "HH:MM" в "HH:MM:SS.mmmZ"
     const [hours, minutes] = time.split(':');
-    return `${hours}:${minutes}:00.000Z`; // Добавляем секунды, миллисекунды и Z
+    return `${hours}:${minutes}:00.000Z`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,10 +119,8 @@ const MainPage = () => {
         finish_time: formatTimeForApi(newOrder.finish_time)
       };
 
-      console.log('Sending data:', requestData); 
-
       const response = await fetch(`${API_BASE_URL}/order`, {
-        method: "post",
+        method: "POST",
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
@@ -131,7 +137,6 @@ const MainPage = () => {
       setOrders([...orders, createdOrder]);
       setIsModalOpen(false);
       
-      // Сброс формы
       setNewOrder({
         baggage: false,
         order_date: new Date().toISOString().split('T')[0],
@@ -141,6 +146,72 @@ const MainPage = () => {
     } catch (err) {
       console.error('Order creation error:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    }
+  };
+
+  const handleDelete = async (orderId: number) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        navigate('/');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/order/${orderId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete order');
+
+      setOrders(orders.filter(order => order.id !== orderId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    }
+  };
+
+  const fetchStaff = async (orderId: number) => {
+    try {
+      setStaffLoading(true);
+      setStaffError('');
+      
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        navigate('/');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/order/stuff/${orderId}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Ошибка загрузки данных сотрудников');
+      
+      const staffData = await response.json();
+      
+      setOrders(orders.map(order => 
+        order.id === orderId ? { ...order, staff: staffData } : order
+      ));
+      
+    } catch (err) {
+      setStaffError(err instanceof Error ? err.message : 'Ошибка загрузки');
+    } finally {
+      setStaffLoading(false);
+    }
+  };
+
+  const toggleExpand = async (orderId: number) => {
+    if (expandedOrderId === orderId) {
+      setExpandedOrderId(null);
+    } else {
+      setExpandedOrderId(orderId);
+      if (!orders.find(o => o.id === orderId)?.staff) {
+        await fetchStaff(orderId);
+      }
     }
   };
 
@@ -168,13 +239,49 @@ const MainPage = () => {
             <div key={order.id} className="order-card">
               <div className="order-header">
                 <h3>Бронь #{order.id}</h3>
-                <span className={`badge ${order.baggage ? 'baggage-yes' : 'baggage-no'}`}>
-                  {order.baggage ? 'С багажом' : 'Без багажа'}
-                </span>
+                <div className="order-actions">
+                  <span className={`badge ${order.baggage ? 'baggage-yes' : 'baggage-no'}`}>
+                    {order.baggage ? 'С багажом' : 'Без багажа'}
+                  </span>
+                  <button 
+                    className="delete-btn"
+                    onClick={() => handleDelete(order.id)}
+                  >
+                    Удалить
+                  </button>
+                </div>
               </div>
               <div className="order-details">
                 <p><strong>Дата:</strong> {order.order_date}</p>
                 <p><strong>Время:</strong> {formatTime(order.start_time)} - {formatTime(order.finish_time)}</p>
+                
+                <button 
+                  className={`expand-btn ${expandedOrderId === order.id ? 'expanded' : ''}`}
+                  onClick={() => toggleExpand(order.id)}
+                >
+                  {expandedOrderId === order.id ? 'Скрыть сотрудников' : 'Показать сотрудников'}
+                </button>
+
+                {expandedOrderId === order.id && (
+                  <div className="staff-section">
+                    {staffLoading && <div className="loading-staff">Загрузка сотрудников...</div>}
+                    {staffError && <div className="error-staff">{staffError}</div>}
+                    
+                    {order.staff?.length ? (
+                      <div className="staff-list">
+                        {order.staff.map(staff => (
+                          <div key={staff.id} className="staff-item">
+                            <h4>{staff.name}</h4>
+                            <p>Должность: {staff.position}</p>
+                            <p>Email: {staff.email}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      !staffLoading && !staffError && <div className="no-staff">Сотрудники не назначены</div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}
