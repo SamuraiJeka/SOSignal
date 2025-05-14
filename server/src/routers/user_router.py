@@ -26,7 +26,7 @@ async def post_user(
         raise HTTPException(status_code=exc.status, detail=exc.msg)
 
 
-@router.get("/", status_code=200)
+@router.get("/all", status_code=200)
 async def get_all_users(
     current_user: UserSchema = Depends(get_current_user)
 ) -> list[UserSchema]:
@@ -35,6 +35,13 @@ async def get_all_users(
             return await UserService(session).get_all()
     except UserListIsEmpty as exc:
         raise HTTPException(status_code=exc.status, detail=exc.msg)
+    
+
+@router.get("/")
+async def get_user_by_id(
+    current_user: UserSchema = Depends(get_current_user)
+) -> UserSchema:
+    return current_user
 
 
 @router.patch("/", status_code=200)
