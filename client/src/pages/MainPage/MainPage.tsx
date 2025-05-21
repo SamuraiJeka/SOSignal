@@ -13,11 +13,9 @@ interface Order {
   staff?: Staff[];
 }
 
-interface NewOrder {
-  baggage: boolean;
-  order_date: string;
-  start_time: string;
-  finish_time: string;
+interface Staff {
+  full_name: string;
+  email: string;
 }
 
 interface Staff {
@@ -25,6 +23,13 @@ interface Staff {
   name: string;
   position: string;
   email: string;
+}
+
+interface NewOrder {
+  baggage: boolean;
+  order_date: string;
+  start_time: string;
+  finish_time: string;
 }
 
 const API_BASE_URL = 'http://localhost:5000';
@@ -247,7 +252,7 @@ const MainPage = () => {
                     className="delete-btn"
                     onClick={() => handleDelete(order.id)}
                   >
-                    Удалить
+                    Завершить
                   </button>
                 </div>
               </div>
@@ -266,14 +271,15 @@ const MainPage = () => {
                   <div className="staff-section">
                     {staffLoading && <div className="loading-staff">Загрузка сотрудников...</div>}
                     {staffError && <div className="error-staff">{staffError}</div>}
-                    
-                    {order.staff?.length ? (
+    
+                    {order.staff && order.staff.length > 0 ? (
                       <div className="staff-list">
-                        {order.staff.map(staff => (
-                          <div key={staff.id} className="staff-item">
-                            <h4>{staff.name}</h4>
-                            <p>Должность: {staff.position}</p>
-                            <p>Email: {staff.email}</p>
+                        <h4>Сотрудники:</h4>
+                        {order.staff.map((staff, index) => (
+                          <div key={`${order.id}-${index}`} className="staff-item">
+                            <p><strong>Имя:</strong> {staff.full_name}</p>
+                            <p><strong>Email:</strong> {staff.email}</p>
+                            {index < order.staff.length - 1 && <hr className="staff-divider" />}
                           </div>
                         ))}
                       </div>
